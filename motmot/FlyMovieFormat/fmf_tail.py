@@ -2,7 +2,7 @@ import pkg_resources
 import numpy as np
 import pyglet
 from pygarrayimage.arrayimage import ArrayInterfaceImage
-import sys, time
+import sys, time, os
 import motmot.FlyMovieFormat.FlyMovieFormat as fmf_mod
 import motmot.imops.imops as imops
 
@@ -22,8 +22,27 @@ def convert(frame,format):
     return frame
 
 def main():
-    fmf_filename = sys.argv[1]
-
+    fmf_filename = []
+    directory = './'
+    if len(sys.argv) > 1:
+        argin = sys.argv[1]
+        if argin[-3:] == 'fmf':
+            fmf_filename = argin
+        else:
+            directory = argin
+    
+    if fmf_filename == []:
+        filenames = os.listdir(directory)
+        mtimes = np.zeros(len(filenames))
+        for f,filename in enumerate(filenames):
+            if filename[-3:] == 'fmf':
+                mtimes[f] = os.path.getmtime(os.path.join(directory,filename))
+                
+        inds = np.argsort(mtimes)
+        fmf_filename = os.path.join(directory,filenames[inds[-1]])
+    print directory
+    print fmf_filename
+    
     fmf = fmf_mod.FlyMovie(fmf_filename)
     frame,timestamp = fmf.get_next_frame()
     frame = convert(frame,fmf.format)
